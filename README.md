@@ -186,3 +186,6 @@ The PlantUML source is also available in `docs/class-diagram.puml`.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+______________________________________
+Author
+Fadi Yosef
