@@ -1,0 +1,133 @@
+@startuml
+title ParkingApp Professional Desktop Architecture
+
+package "com.parkingapp" {
+  class Main
+}
+
+package "com.parkingapp.ui" {
+  class ParkingAppFrame
+  class UiTheme
+}
+
+package "com.parkingapp.service" {
+  class ParkingService {
+    + registerCustomer(name: String, phoneNumber: String, plateNumber: String): Customer
+    + addParkingSpot(areaCode: int, spotNumber: int): void
+    + getAllParkingSpots(): List<ParkingSpot>
+    + getAvailableSpotsByArea(areaCode: int): List<ParkingSpot>
+    + searchParkingSpots(areaCode: Integer, spotNumber: Integer, availableOnly: Boolean): List<ParkingSpot>
+    + createReservation(customerId: int, areaCode: int, spotNumber: int, durationHours: int): Reservation
+    + completeReservation(reservationId: String): Reservation
+    + findCustomerByPhoneNumber(phoneNumber: String): Customer
+    + searchCustomers(nameQuery: String, phoneQuery: String, plateQuery: String): List<Customer>
+    + findCustomer(customerId: int): Customer
+    + findParkingSpot(areaCode: int, spotNumber: int): ParkingSpot
+    + findReservation(reservationId: String): Reservation
+    + getAllCustomers(): List<Customer>
+    + getOccupiedSpots(): List<ParkingSpot>
+    + getAllReservations(): List<Reservation>
+    + getActiveReservations(): List<Reservation>
+    + searchReservations(reservationIdQuery: String, plateQuery: String, areaCode: Integer, spotNumber: Integer): List<Reservation>
+    + calculateParkingFee(reservation: Reservation): double
+    + getTotalSpotsCount(): int
+    + getAvailableSpotsCount(): int
+    + getOccupiedSpotsCount(): int
+    + getActiveReservationCount(): int
+    + getTodayRevenue(): double
+    + ensureDefaultParkingSpots(): void
+  }
+}
+
+package "com.parkingapp.repository" {
+  interface CustomerRepository
+  interface ParkingSpotRepository
+  interface ReservationRepository
+}
+
+package "com.parkingapp.repository.sqlite" {
+  class SQLiteDatabase
+  class SQLiteCustomerRepository
+  class SQLiteParkingSpotRepository
+  class SQLiteReservationRepository
+}
+
+package "com.parkingapp.repository.csv" {
+  class CsvCustomerRepository
+  class CsvParkingSpotRepository
+  class CsvReservationRepository
+}
+
+package "com.parkingapp.model" {
+  class Customer {
+    - customerId: int
+    - name: String
+    - phoneNumber: String
+    - vehicle: Vehicle
+  }
+
+  class Vehicle {
+    - plateNumber: String
+  }
+
+  class ParkingSpot {
+    - areaCode: int
+    - spotNumber: int
+    - status: SpotStatus
+    + isAvailable(): boolean
+    + occupy(): void
+    + vacate(): void
+  }
+
+  class Reservation {
+    - reservationId: String
+    - customer: Customer
+    - parkingSpot: ParkingSpot
+    - startTime: LocalDateTime
+    - endTime: LocalDateTime
+    - status: ReservationStatus
+    - completedAt: LocalDateTime
+    + complete(completedAt: LocalDateTime): void
+  }
+
+  enum ReservationStatus {
+    ACTIVE
+    COMPLETED
+  }
+
+  enum SpotStatus {
+    AVAILABLE
+    OCCUPIED
+  }
+}
+
+package "com.parkingapp.util" {
+  class ReservationIdGenerator {
+    + generate(): String
+  }
+}
+
+Main --> ParkingService
+Main --> ParkingAppFrame
+ParkingAppFrame --> ParkingService
+ParkingAppFrame --> UiTheme
+ParkingService --> CustomerRepository
+ParkingService --> ParkingSpotRepository
+ParkingService --> ReservationRepository
+ParkingService --> ReservationIdGenerator
+SQLiteCustomerRepository ..|> CustomerRepository
+SQLiteParkingSpotRepository ..|> ParkingSpotRepository
+SQLiteReservationRepository ..|> ReservationRepository
+SQLiteCustomerRepository --> SQLiteDatabase
+SQLiteParkingSpotRepository --> SQLiteDatabase
+SQLiteReservationRepository --> SQLiteDatabase
+CsvCustomerRepository ..|> CustomerRepository
+CsvParkingSpotRepository ..|> ParkingSpotRepository
+CsvReservationRepository ..|> ReservationRepository
+Customer *-- Vehicle
+ParkingSpot --> SpotStatus
+Reservation --> Customer
+Reservation --> ParkingSpot
+Reservation --> ReservationStatus
+
+@enduml
